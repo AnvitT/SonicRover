@@ -1,9 +1,6 @@
 #include <AFMotor.h>
-#include <SoftwareSerial.h>
 #include <NewPing.h>
 #include <NewTone.h>
-
-SoftwareSerial BTSerial(A4, A5);
 
 #define TRIGGER_PIN A0
 #define ECHO_PIN A1
@@ -18,16 +15,19 @@ AF_DCMotor motor3(3);
 AF_DCMotor motor4(4);
 
 void setup() {
-  // Serial.begin(9600);
-  BTSerial.begin(9600);
+  Serial.begin(9600);
   motor1.setSpeed(80);
   motor2.setSpeed(80);
   motor3.setSpeed(80);
-  motor4.setSpeed(80)..
-  0;
+  motor4.setSpeed(80);
+  pinMode(A4, OUTPUT); // red
+  pinMode(A5, OUTPUT); // green
+
+
 }
 
 void forward(){
+    ledState('G');
     motor1.run(FORWARD);
     motor2.run(FORWARD);
     motor3.run(FORWARD);
@@ -35,10 +35,25 @@ void forward(){
 }
 
 void stop(){
+    ledState('R');
     motor1.run(RELEASE);
     motor2.run(RELEASE);
     motor3.run(RELEASE);
     motor4.run(RELEASE);
+}
+
+void ledState(char color){
+  if (color == 'R'){
+    digitalWrite(A4, HIGH); 
+    digitalWrite(A5, LOW); 
+  }
+  else if (color == 'G'){
+    digitalWrite(A5, HIGH); 
+    digitalWrite(A4, LOW);  
+  }
+  else{
+
+  }
 }
 
 bool checkValid(char temp){
@@ -62,30 +77,25 @@ void checkObstacle(){
     NewTone(TONE_PIN,300);
     delay(100);
     noNewTone(TONE_PIN);
-    // Serial.print("Obstacle detected at ");
-    // Serial.print(distance);
-    // Serial.println("cm!! Stopping...");
   }
 }
 
 void loop() {
-  if (BTSerial.available()) {
-    data = BTSerial.read();
+  if (Serial.available()) {
+    data = Serial.read();
     delay(500);
-    // Serial.println(data);
   }
   if (checkValid(data)){
     if (data == 'F'){
       forward();
-      // Serial.println("Forward!");
     }
     else if (data == 'S'){
       stop();
-      // Serial.println("Stopping!");
     }
     else{
-      // Serial.println("Invalid Command!");
     }
   }
   checkObstacle();
+
   }
+
