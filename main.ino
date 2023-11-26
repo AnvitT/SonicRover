@@ -113,7 +113,7 @@ char data;
 
 bool primaryCheck(){
   unsigned int distance = sonar.ping_cm();
-  if (distance < 15){
+  if (distance < 20){
     secondaryCheck();
   }
 }
@@ -121,10 +121,11 @@ bool primaryCheck(){
 bool secondaryCheck(){
   unsigned int distance = sonar.ping_cm();
   int counter = 0;
-  for (int i = 0; i < 5; i++){
-    if (distance < 15){
+  for (int i = 0; i < 4; i++){
+    if (distance < 20){
       unsigned int distance = sonar.ping_cm();
       counter++;
+      delay(100);
     }
   }
   if (counter > 3){
