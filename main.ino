@@ -9,6 +9,8 @@
 
 int loopDelay = 500;
 
+
+
 NewPing sonar(TRIGGER_PIN, ECHO_PIN);
 
 AF_DCMotor motor1(1); // top right motor
@@ -111,28 +113,6 @@ bool checkValid(char temp){
 
 char data;
 
-bool primaryCheck(){
-  unsigned int distance = sonar.ping_cm();
-  if (distance < 20){
-    secondaryCheck();
-  }
-}
-
-bool secondaryCheck(){
-  unsigned int distance = sonar.ping_cm();
-  int counter = 0;
-  for (int i = 0; i < 4; i++){
-    if (distance < 20){
-      unsigned int distance = sonar.ping_cm();
-      counter++;
-      delay(100);
-    }
-  }
-  if (counter > 3){
-    stop();
-  }
-}
-
 void execute(char temp){
   if (checkValid(temp)){
     char lower_command = tolower(temp);
@@ -150,14 +130,22 @@ void execute(char temp){
 }
 
 void loop() {
-  if (Serial.available()) {
-    data = Serial.read();
-    delay(loopDelay);
+  if (primaryCheck()) {
+    stop();
+  } 
+  else {
+    if (Serial.available()) {
+      data = Serial.read();
+      delay(loopDelay);
+      execute(data);
+    }
   }
-  execute(data);
-  }
+}
 
-
+bool primaryCheck() {
+  unsigned int distance = sonar.ping_cm();
+  return (distance > 0 && distance < 20);
+}
 
 
 
