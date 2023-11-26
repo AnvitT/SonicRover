@@ -114,17 +114,7 @@ char data;
 bool primaryCheck(){
   unsigned int distance = sonar.ping_cm();
   if (distance < 15){
-    loopDelay = 100;
-    bool dec = secondaryCheck();
-    if (dec){
-      stop();
-    }
-    else{
-      return false;
-    }
-  }
-  else{
-    return false;
+    secondaryCheck();
   }
 }
 
@@ -140,32 +130,17 @@ bool secondaryCheck(){
   if (counter > 3){
     stop();
   }
-  else{
-    return false;
-  }
-  loopDelay = 500;
 }
 
 void execute(char temp){
   if (checkValid(temp)){
-    if (temp == 'F' || temp == 'f'){
-      forward();
-    }
-    else if (temp == 'S' || temp == 's'){
-      stop();
-    }
-    else if (temp == 'L' || temp == 'l'){
-      left();
-    }
-    else if (temp == 'R' || temp == 'r'){
-      right();
-    }
-    else if (temp == 'B' || temp == 'b'){
-      back();
-    }
-    else{
-      stop();
-    }
+    char lower_command = tolower(temp);
+    if (lower_command == 'f'){ forward(); }
+    else if (lower_command == 's'){ stop(); }
+    else if (lower_command == 'l'){ left(); }
+    else if (lower_command == 'r'){ right(); }
+    else if (lower_command == 'b'){ back(); }
+    else{ stop(); }
   }
   else{
     stop();
