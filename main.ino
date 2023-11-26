@@ -7,6 +7,8 @@
 
 #define TONE_PIN A3
 
+int loopDelay = 500;
+
 NewPing sonar(TRIGGER_PIN, ECHO_PIN);
 
 AF_DCMotor motor1(1); // top right motor
@@ -109,42 +111,69 @@ bool checkValid(char temp){
 
 char data;
 
-bool checkObstacle(){
+bool primaryCheck(){
   unsigned int distance = sonar.ping_cm();
-  if (distance < 15 && (data == 'F' || data == 'f')){
-    stop();
-    NewTone(TONE_PIN,300);
-    delay(100);
-    noNewTone(TONE_PIN);
+  if (distance < 15){
+    loopDelay = 100;
+    bool dec = secondaryCheck();
+    return dec;
+  }
+  else{
+    return false;
   }
 }
 
+bool secondaryCheck(){
+  unsigned int distance = sonar.ping_cm();
+  int counter = 0;
+  for (int i = 0; i < 5; i++){
+    if (distance < 15){
+      unsigned int distance = sonar.ping_cm();
+      counter++;
+    }
+  }
+  if (counter > 3){
+    return true;
+  }
+  else{
+    return false;
+  }
+  loopDelay = 500;
+}
+
+void execute(char temp){
+  if (checkValid(temp)){
+    if (temp == 'F' || temp == 'f'){
+      forward();
+    }
+    else if (temp == 'S' || temp == 's'){
+      stop();
+    }
+    else if (temp == 'L' || temp == 'l'){
+      left();
+    }
+    else if (temp == 'R' || temp == 'r'){
+      right();
+    }
+    else if (temp == 'B' || temp == 'b'){
+      back();
+    }
+    else{
+      stop();
+    }
+  }
+  else{
+    stop();
+  }
+  primaryCheck();
+}
 
 void loop() {
   if (Serial.available()) {
     data = Serial.read();
-    delay(500);
+    delay(loopDelay);
   }
-  if (checkValid(data)){
-    if (data == 'F' || data == 'f'){
-      forward();
-    }
-    else if (data == 'S' || data == 's'){
-      stop();
-    }
-    else if (data == 'R' || data == 'r'){
-      right();
-
-    }
-    else if (data == 'L' || data == 'l'){
-      left();
-    }
-    else if (data == 'B' || data == 'b'){
-      back();
-    }
-    else{
-    }
-  }
+  execute(data);
   checkObstacle();
   }
 
