@@ -116,7 +116,12 @@ bool primaryCheck(){
   if (distance < 15){
     loopDelay = 100;
     bool dec = secondaryCheck();
-    return dec;
+    if (dec){
+      stop();
+    }
+    else{
+      return false;
+    }
   }
   else{
     return false;
@@ -133,7 +138,7 @@ bool secondaryCheck(){
     }
   }
   if (counter > 3){
-    return true;
+    stop();
   }
   else{
     return false;
@@ -174,7 +179,6 @@ void loop() {
     delay(loopDelay);
   }
   execute(data);
-  checkObstacle();
   }
 
 
