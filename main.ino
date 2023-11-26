@@ -139,6 +139,7 @@ void loop() {
       delay(loopDelay);
       execute(data);
     }
+    execute(data);
   }
 }
 
@@ -146,6 +147,5 @@ bool primaryCheck() {
   unsigned int distance = sonar.ping_cm();
   return (distance > 0 && distance < 20);
 }
-
 
 
