@@ -156,7 +156,19 @@ bool checkValid(char temp){
 
 bool primaryCheck() {
   long distance = calculateDistance();
-  return (distance < detectionDistance);
+  if (distance < detectionDistance){
+    long distance1 = calculateDistance();
+    delay(100);
+    long distance2 = calculateDistance();
+    delay(100);
+    long avgDistance = (distance1 + distance2) / 2;
+    if (avgDistance < detectionDistance){
+      return true;
+    }
+    else{
+      return false;
+    }
+  }
 }
 
 void execute(char temp){
@@ -296,4 +308,3 @@ void loop() {
     execute(data);
   }
 }
-
