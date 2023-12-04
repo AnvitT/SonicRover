@@ -1,6 +1,6 @@
 #include <AFMotor.h>
 #include <Servo.h>
-
+#include <math.h> // Include math library for using acos and degrees conversion
 
 AF_DCMotor motor1(1); // top right motor
 AF_DCMotor motor2(2); // top left motor
@@ -20,9 +20,12 @@ const int frequency = 300;   // frequency of buzzer
 
 int loopDelay = 500;
 char data;  // variable for incoming bluetooth data
-int oneFullTurnTime = 4000;
+int oneFullTurnTime = 3800;
+const int distanceToPass = 40;
+int cluster;
+int maxSpeed = 130;
 
-const int cluster = 8;
+
 Servo myServo;
 
 
@@ -45,6 +48,8 @@ void setup(){
 
   myServo.attach(servoPin);
   myServo.write(90);
+
+  cluster = calculateCluster(detectionDistance,distanceToPass);
 }
 
 void ledState(char color){
@@ -76,10 +81,10 @@ void forward(){
     myServo.write(90);
     ledState('G');
 
-    motor1.setSpeed(130);
-    motor2.setSpeed(130);
-    motor3.setSpeed(130);
-    motor4.setSpeed(130);
+    motor1.setSpeed(maxSpeed);
+    motor2.setSpeed(maxSpeed);
+    motor3.setSpeed(maxSpeed);
+    motor4.setSpeed(maxSpeed);
 
     motor1.run(FORWARD);
     motor2.run(FORWARD);
@@ -88,6 +93,7 @@ void forward(){
 }
 
 void stop(){
+    myServo.write(90);
     ledState('R');
 
     motor1.setSpeed(0);
@@ -102,11 +108,12 @@ void stop(){
 }
 
 void left(){
+  myServo.write(90);
   ledState('Y');
 
-  motor1.setSpeed(180);
+  motor1.setSpeed(130);
   motor2.setSpeed(80);
-  motor3.setSpeed(180);
+  motor3.setSpeed(130);
   motor4.setSpeed(80);
 
   motor1.run(FORWARD);
@@ -115,12 +122,13 @@ void left(){
   motor4.run(BACKWARD);
 }
 void right(){
+  myServo.write(90);
   ledState('Y');
 
   motor1.setSpeed(80);
-  motor2.setSpeed(180);
+  motor2.setSpeed(130);
   motor3.setSpeed(80);
-  motor4.setSpeed(180);
+  motor4.setSpeed(130);
 
   motor1.run(BACKWARD);
   motor2.run(FORWARD);
@@ -128,18 +136,19 @@ void right(){
   motor4.run(FORWARD);
 }
 
-void back(){
-    ledState('R');
+void back(){    
+  myServo.write(90);
+  ledState('R');
 
-    motor1.setSpeed(80);
-    motor2.setSpeed(80);
-    motor3.setSpeed(80);
-    motor4.setSpeed(80);
+  motor1.setSpeed(80);
+  motor2.setSpeed(80);
+  motor3.setSpeed(80);
+  motor4.setSpeed(80);
 
-    motor1.run(BACKWARD);
-    motor2.run(BACKWARD);
-    motor3.run(BACKWARD);
-    motor4.run(BACKWARD);
+  motor1.run(BACKWARD);
+  motor2.run(BACKWARD);
+  motor3.run(BACKWARD);
+  motor4.run(BACKWARD);
 }
 
 bool checkValid(char temp){
@@ -154,7 +163,18 @@ bool checkValid(char temp){
   return isValid;
 }
 
+
+int calculateCluster(int obstacleDistance,int minDistanceToPass){
+  float equalSide = pow((pow(obstacleDistance,2)+pow(minDistanceToPass,2)),0.5);
+  float angle = 2* (asin((minDistanceToPass/2)/equalSide));
+  float angleDegree = (180/PI) * angle;
+  int cluster = angleDegree/degreeTurn;
+  return cluster;
+}
+
+
 bool primaryCheck() {
+  myServo.write(90);
   long distance = calculateDistance();
   if (distance < detectionDistance){
     long distance1 = calculateDistance();
@@ -199,6 +219,9 @@ long calculateDistance(){
   digitalWrite(triggerPin, LOW);
   duration = pulseIn(echoPin, HIGH);
   distance = duration * 0.034 / 2;  // Convert duration to distance in cm
+  if(distance==0){
+    return 200;
+  }
   return distance;
 
 }
@@ -253,19 +276,16 @@ int analyse(){
   return index;
 }
 
-char turnLeftRight(int index){
-  float tempTime = (index / 120.0) * oneFullTurnTime;
-  int degree = 3*index;
-  if (degree < 90){
-    holdFunction(2,tempTime);
-    return 'r';
-  }
-  else if (degree > 90){
-    holdFunction(3,tempTime);
-    return 'l';
+void turnLeftRight(int index){
+  if(index<30){
+    int degree = 90-(3*index);
+    float tempTime = (oneFullTurnTime / 360.0) * degree;
+    holdFunction(2,tempTime+200);
   }
   else{
-    return 'n';
+    int degree = (3*index)-90;
+    int tempTime = (oneFullTurnTime / 360.0) * degree;
+    holdFunction(3,tempTime+200);
   }
 }
 
@@ -290,13 +310,20 @@ void holdFunction(int identifier,int duration){
   }
 }
 
-
 void loop() {
+  if (Serial.available()) {
+      data = Serial.read();
+      if (data == 's' || data == 'S'){
+        stop();
+      }
+    }
   if (primaryCheck()) {
     //  long start = millis();
     // playBuzzer(1000,frequency,start);
     holdFunction(1,1000);
+    myServo.write(90);
     int index = analyse();
+    Serial.println(index);
     turnLeftRight(index);
     } 
   else {
@@ -308,3 +335,5 @@ void loop() {
     execute(data);
   }
 }
+
+
