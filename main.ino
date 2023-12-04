@@ -15,8 +15,6 @@ const int yellowPin = A3; // Pin for yellow LED
 const int redPin = A4;    // Pin for red LED
 const int greenPin = A5;   // Pin for green LED
 const int degreeTurn = 3;  // degree for each turn of servo motor
-const int buzzerPin = A2;    // Pin for the buzzer
-const int frequency = 300;   // frequency of buzzer
 
 int loopDelay = 500;
 char data;  // variable for incoming bluetooth data
@@ -31,17 +29,10 @@ Servo myServo;
 
 void setup(){
   Serial.begin(9600);
-
-  motor1.setSpeed(100);
-  motor2.setSpeed(100);
-  motor3.setSpeed(100);
-  motor4.setSpeed(100);
-
+  
   pinMode(yellowPin, OUTPUT);
   pinMode(redPin, OUTPUT);
   pinMode(greenPin, OUTPUT);
-
-  pinMode(buzzerPin, OUTPUT);
 
   pinMode(triggerPin, OUTPUT);
   pinMode(echoPin, INPUT);
@@ -81,15 +72,26 @@ void forward(){
     myServo.write(90);
     ledState('G');
 
-    motor1.setSpeed(maxSpeed);
-    motor2.setSpeed(maxSpeed);
-    motor3.setSpeed(maxSpeed);
-    motor4.setSpeed(maxSpeed);
+    // motor1.setSpeed(maxSpeed);
+    // motor2.setSpeed(maxSpeed);
+    // motor3.setSpeed(maxSpeed);
+    // motor4.setSpeed(maxSpeed);
 
-    motor1.run(FORWARD);
-    motor2.run(FORWARD);
-    motor3.run(FORWARD);
-    motor4.run(FORWARD);
+    // motor1.run(FORWARD);
+    // motor2.run(FORWARD);
+    // motor3.run(FORWARD);
+    // motor4.run(FORWARD);
+      for(int i = 0; i < maxSpeed; i+=3){
+        motor1.run(FORWARD);      
+        motor2.run(FORWARD);
+        motor3.run(FORWARD); 
+        motor4.run(FORWARD);  
+        motor1.setSpeed(i);
+        motor2.setSpeed(i);
+        motor3.setSpeed(i);
+        motor4.setSpeed(i);
+        delay(5);
+  }
 }
 
 void stop(){
@@ -207,9 +209,6 @@ void execute(char temp){
   primaryCheck();
 }
 
-
-
-
 long calculateDistance(){
   long duration, distance;
   digitalWrite(triggerPin, LOW);
@@ -225,20 +224,6 @@ long calculateDistance(){
   return distance;
 
 }
-
-
-void playBuzzer(int duration, int frequency,long start){
-  if (millis()-start  <= duration){
-    tone(buzzerPin, frequency);
-  }
-  else{
-    noTone(buzzerPin);
-  }
-}
-
-
-
-
 
 void scan(long* distanceArr){
     for (int angle = 0; angle <= 180; angle += degreeTurn) {
@@ -316,10 +301,12 @@ void loop() {
       if (data == 's' || data == 'S'){
         stop();
       }
+      else{
+          execute(data);
+      }  
     }
+
   if (primaryCheck()) {
-    //  long start = millis();
-    // playBuzzer(1000,frequency,start);
     holdFunction(1,1000);
     myServo.write(90);
     int index = analyse();
@@ -334,6 +321,7 @@ void loop() {
     }
     execute(data);
   }
+  execute(data);
 }
 
 
