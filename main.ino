@@ -1,6 +1,12 @@
+/*
+ * Author: Anvit Tandon
+ * Date: 28/11/23 [Last Modified]
+ * Description: [Code to control the car and scan and analyze obstacles in front of it.]
+ */
+
 #include <AFMotor.h>
 #include <Servo.h>
-#include <math.h> // Include math library for using acos and degrees conversion
+#include <math.h> 
 
 AF_DCMotor motor1(1); // top right motor
 AF_DCMotor motor2(2); // top left motor
